@@ -1,0 +1,140 @@
+# CrossPoint Reader Provisioning Configuration
+# ============================================
+# This file configures a device at boot time.
+# Place it at the SD card root as /provision.yaml
+#
+# How it works:
+#  1. On boot, the device reads /provision.yaml
+#  2. Settings are validated and applied to the device
+#  3. Each successfully-applied setting is removed from the file
+#  4. Unapplied settings (errors) are left in place for retry on next boot
+#  5. When all settings are applied, the file is deleted
+#
+# Note: Passwords in this file are plaintext here but are obfuscated
+# with the device's MAC address when stored, tying them to this device.
+# Do not share provisioning files between devices.
+
+version: "1.0"
+
+# WiFi Networks (optional)
+# Stores up to 8 networks. Passwords are plaintext here, obfuscated at storage.
+wifi:
+  networks:
+    - ssid: "Home WiFi"
+      password: "my-password-here"
+      # lastConnected: true  # Optional; set one to auto-connect first
+
+    - ssid: "Mobile Hotspot"
+      password: "hotspot-password"
+
+  # OPDS download destination ("" = SD root)
+  downloadFolder: "/Books/Downloaded"
+
+  # Filename format for OPDS downloads
+  filenameFormat: "author-title"  # Options: "author-title" | "title-author" | "title"
+
+# OPDS Servers (optional)
+# Stores up to 8 servers. Passwords are plaintext here, obfuscated at storage.
+# username and password keys are optional; omit them or leave empty if not required.
+opds:
+  servers:
+    - name: "Project Gutenberg"
+      url: "https://www.gutenberg.org/ebooks/search.opds/"
+      # username and password omitted (not needed for public servers)
+
+    - name: "Standard Ebooks"
+      url: "https://standardebooks.org/opds/"
+      username: "user@example.com"  # Optional; omit or leave empty if not needed
+      password: "plaintext-password"
+
+# Display Settings (optional)
+display:
+  nightMode: false                    # Enable night mode (inverted display)
+  orientation: "portrait"             # Options: "portrait" | "landscape-cw" | "inverted" | "landscape-ccw"
+  sleepScreen: "dark"                 # Options: "dark" | "light" | "custom" | "cover" | "cover-custom" | "blank" | "quick-resume"
+  sleepScreenCoverFit: "fit"          # Options: "fit" | "crop"
+  sleepScreenCoverFilter: "none"      # Options: "none" | "black-white" | "inverted-bw"
+  fadingCompensation: false           # Sunlight fading compensation
+
+# Text Rendering Settings (optional)
+# These are the most important for EPUB reading customization
+text:
+  fontFamily: "noto-serif"            # Options: "noto-serif" | "noto-sans" | "<sd-card-font-name>"
+  fontSize: 14                        # Point size: 10-32 (must be available in the chosen family)
+  lineSpacing: "normal"               # Options: "tight" | "normal" | "wide" | "extra-wide"
+  paragraphSpacing: true              # Extra space between paragraphs
+  paragraphAlignment: "justified"     # Options: "justified" | "left" | "center" | "right" | "book-style"
+  paragraphIndent: 2                  # Indent in spaces: 0-5
+  wordSpacing: 100                    # Percent of font's space advance: 50-200
+  characterSpacing: 0                 # Per-character offset in px: -2 to +2
+  antiAliasing: true                  # Smooth text rendering
+  hyphenation: false                  # Enable word hyphenation
+  screenMargin: 5                     # Page margins in px: 5-40 (step 5)
+
+# Status Bar Settings (optional)
+statusbar:
+  showChapterPageCount: true          # Show chapter/page progress
+  showBookProgressPercent: true       # Show % of book read
+  progressBar: "hidden"               # Options: "book-progress" | "chapter-progress" | "hidden"
+  progressBarThickness: "normal"      # Options: "thin" | "normal" | "thick"
+  title: "chapter"                    # Options: "book" | "chapter" | "hidden"
+  showBattery: true                   # Show battery icon
+  hideBatteryPercent: "never"         # Options: "never" | "reader" | "always"
+  clock: "hidden"                     # Options: "hidden" | "right" | "left"
+  clockFormat: "24h"                  # Options: "24h" | "12h"
+  clockDst: "auto"                    # Options: "auto" | "on" | "off"
+  xtcMode: "hidden"                   # Options: "hidden" | "bottom" | "top"
+
+# UI Settings (optional)
+ui:
+  theme: "lyra"                       # Options: "classic" | "lyra" | "lyra-3-covers" | "rounded-raff" | "cover-grid"
+  language: "EN"                      # ISO language code: "EN" | "DE" | "FR" | etc.
+
+# Input & Button Settings (optional)
+input:
+  sideButtons: "prev-next"            # Options: "prev-next" | "next-prev" | "disabled" | "next-next" | "prev-prev"
+
+  frontButtons:
+    back: 0                           # Physical button index: 0-3
+    confirm: 1
+    left: 2
+    right: 3
+
+  powerButton:
+    shortPress: "ignore"              # Options: "ignore" | "sleep" | "page-turn" | "force-refresh" | "footnotes" | "confirm"
+    doubleClickFrontlight: true       # Double-click power = toggle frontlight
+    longPressPageTurn: "off"          # Options: "off" | "chapter-skip" | "orientation-change"
+    returnFromFootnotes: true         # Power button returns from footnotes
+
+  touchGestures:
+    enabled: true                     # Enable touch gestures (if device has touch)
+    pageForward: "swipe-only"         # Options: "tap-and-swipe" | "tap-only" | "swipe-only" | "inverted-tap" | "disabled"
+    pageBackward: "swipe-only"
+    showReaderMenu: "tap"             # Options: "off" | "tap" | "swipe-up"
+
+  tiltPageTurn: "off"                 # Options: "off" | "normal" | "inverted" (X3 only)
+
+# Reader Behavior Settings (optional)
+reader:
+  autoSleepMinutes: 10                # Auto-sleep after N minutes: 1-31
+  refreshFrequency: 15                # Full refresh every N pages: 1, 5, 10, 15, 30, or 0 (never)
+  imageRendering: "display"           # Options: "display" | "placeholder" | "suppress"
+  focusReading: false                 # Emphasize first part of words (bold)
+  useEmbeddedStyles: true             # Use book's embedded CSS
+  menuStyle: "list"                   # Options: "list" | "toolbar"
+  quickResume: "never"                # Options: "never" | "after-timeout"
+
+# Library & File Browser Settings (optional)
+library:
+  useMetadata: true                   # Show EPUB metadata instead of filename
+  showHiddenFiles: false              # Show dotfiles in file browser
+  removeFinishedFromRecents: false    # Auto-remove finished books from recents
+  moveFinishedToReadFolder: false     # Auto-move finished books to /Read/
+  shortBackToFileBrowser: false       # Back button goes to file browser
+
+# Frontlight Settings (optional, if device has frontlight)
+frontlight:
+  brightness: 60                      # Brightness: 0-100%
+  warmth: 50                          # Color temperature: 0 (cool) - 100 (warm)
+  enabled: false                      # Turn frontlight on at boot
+  restoreOnWake: true                 # Remember on/off state after sleep

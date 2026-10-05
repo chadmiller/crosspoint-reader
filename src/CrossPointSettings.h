@@ -8,6 +8,9 @@
 
 #include "util/HomeButtonInput.h"
 
+// If you add or delete the enums in this class, make sure to update the
+// corresponding info in the provisioning doc docs/provision-example.yaml
+
 class CrossPointSettings : public PersistableStore<CrossPointSettings> {
  private:
   // Private constructor for singleton
@@ -16,7 +19,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   friend class PersistableStore<CrossPointSettings>;
 
  public:
-  enum SLEEP_SCREEN_MODE {
+  enum SLEEP_SCREEN_MODE {  // @prov(section="display")
     DARK = 0,
     LIGHT = 1,
     CUSTOM = 2,
@@ -34,27 +37,27 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
     INVERTED_BLACK_AND_WHITE = 2,
     SLEEP_SCREEN_COVER_FILTER_COUNT
   };
-  enum STATUS_BAR_PROGRESS_BAR {
+  enum STATUS_BAR_PROGRESS_BAR {  // @prov(section="statusbar")
     BOOK_PROGRESS = 0,
     CHAPTER_PROGRESS = 1,
     HIDE_PROGRESS = 2,
     STATUS_BAR_PROGRESS_BAR_COUNT
   };
-  enum STATUS_BAR_PROGRESS_BAR_THICKNESS {
+  enum STATUS_BAR_PROGRESS_BAR_THICKNESS {  // @prov(section="statusbar")
     PROGRESS_BAR_THIN = 0,
     PROGRESS_BAR_NORMAL = 1,
     PROGRESS_BAR_THICK = 2,
     STATUS_BAR_PROGRESS_BAR_THICKNESS_COUNT
   };
-  enum STATUS_BAR_TITLE { BOOK_TITLE = 0, CHAPTER_TITLE = 1, HIDE_TITLE = 2, STATUS_BAR_TITLE_COUNT };
-  enum XTC_STATUS_BAR_MODE {
+  enum STATUS_BAR_TITLE { BOOK_TITLE = 0, CHAPTER_TITLE = 1, HIDE_TITLE = 2, STATUS_BAR_TITLE_COUNT };  // @prov(section="statusbar")
+  enum XTC_STATUS_BAR_MODE {  // @prov(section="statusbar")
     XTC_STATUS_BAR_HIDE = 0,
     XTC_STATUS_BAR_BOTTOM = 1,
     XTC_STATUS_BAR_TOP = 2,
     XTC_STATUS_BAR_MODE_COUNT
   };
 
-  enum STATUS_BAR_CLOCK_MODE {
+  enum STATUS_BAR_CLOCK_MODE {  // @prov(section="statusbar")
     STATUS_BAR_CLOCK_HIDE = 0,
     STATUS_BAR_CLOCK_RIGHT = 1,
     STATUS_BAR_CLOCK_LEFT = 2,
@@ -63,9 +66,9 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
 
   // Auto follows the timezone's baked DST rule; On/Off override it — the
   // escape hatch for a zone whose law changed before the firmware caught up.
-  enum CLOCK_DST_MODE { CLOCK_DST_AUTO = 0, CLOCK_DST_ON = 1, CLOCK_DST_OFF = 2, CLOCK_DST_MODE_COUNT };
+  enum CLOCK_DST_MODE { CLOCK_DST_AUTO = 0, CLOCK_DST_ON = 1, CLOCK_DST_OFF = 2, CLOCK_DST_MODE_COUNT };  // @prov(section="statusbar")
 
-  enum ORIENTATION {
+  enum ORIENTATION {  // @prov(section="display")
     PORTRAIT = 0,       // 480x800 logical coordinates (current default)
     LANDSCAPE_CW = 1,   // 800x480 logical coordinates, rotated 180° (swap top/bottom)
     INVERTED = 2,       // 480x800 logical coordinates, inverted
@@ -106,7 +109,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   };
 
   // Font family options (built-in fonts only; SD card fonts use sdFontFamilyName)
-  enum FONT_FAMILY { NOTOSERIF = 0, NOTOSANS = 1, FONT_FAMILY_COUNT };
+  enum FONT_FAMILY { NOTOSERIF = 0, NOTOSANS = 1, FONT_FAMILY_COUNT };  // @prov(section="text")
   static constexpr uint8_t LEGACY_OPENDYSLEXIC = 2;
   static constexpr uint8_t BUILTIN_FONT_COUNT = FONT_FAMILY_COUNT;
   // Reader font size is a point size, not an enum slot — see fontPointSize.
@@ -114,8 +117,8 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   // slot; fromJson() folds that range up (see LEGACY_FONT_SIZE_MAX).
   static constexpr uint8_t LEGACY_FONT_SIZE_MAX = 3;
   static constexpr uint8_t DEFAULT_FONT_POINT_SIZE = 14;
-  enum LINE_COMPRESSION { TIGHT = 0, NORMAL = 1, WIDE = 2, EXTRA_WIDE = 3, LINE_COMPRESSION_COUNT };
-  enum PARAGRAPH_ALIGNMENT {
+  enum LINE_COMPRESSION { TIGHT = 0, NORMAL = 1, WIDE = 2, EXTRA_WIDE = 3, LINE_COMPRESSION_COUNT };  // @prov(section="text")
+  enum PARAGRAPH_ALIGNMENT {  // @prov(section="text")
     JUSTIFIED = 0,
     LEFT_ALIGN = 1,
     CENTER_ALIGN = 2,
@@ -125,7 +128,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   };
 
   // Auto-sleep timeout options (in minutes)
-  enum SLEEP_TIMEOUT {
+  enum SLEEP_TIMEOUT {  // @prov(section="reader")
     SLEEP_1_MIN = 0,
     SLEEP_5_MIN = 1,
     SLEEP_10_MIN = 2,
@@ -135,7 +138,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   };
 
   // E-ink refresh frequency (pages between full refreshes).
-  enum REFRESH_FREQUENCY {
+  enum REFRESH_FREQUENCY {  // @prov(section="reader")
     REFRESH_1 = 0,
     REFRESH_5 = 1,
     REFRESH_10 = 2,
@@ -171,7 +174,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   };
 
   // Hide battery percentage
-  enum HIDE_BATTERY_PERCENTAGE { HIDE_NEVER = 0, HIDE_READER = 1, HIDE_ALWAYS = 2, HIDE_BATTERY_PERCENTAGE_COUNT };
+  enum HIDE_BATTERY_PERCENTAGE { HIDE_NEVER = 0, HIDE_READER = 1, HIDE_ALWAYS = 2, HIDE_BATTERY_PERCENTAGE_COUNT };  // @prov(section="statusbar")
 
   // Page turn button long press behavior
   enum LONG_PRESS_BUTTON_BEHAVIOR {
@@ -182,20 +185,20 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   };
 
   // UI Theme
-  enum UI_THEME { CLASSIC = 0, LYRA = 1, LYRA_3_COVERS = 2, ROUNDEDRAFF = 3, COVER_GRID = 4 };
+  enum UI_THEME { CLASSIC = 0, LYRA = 1, LYRA_3_COVERS = 2, ROUNDEDRAFF = 3, COVER_GRID = 4 };  // @prov(section="ui")
 
   // Image rendering in EPUB reader
-  enum IMAGE_RENDERING { IMAGES_DISPLAY = 0, IMAGES_PLACEHOLDER = 1, IMAGES_SUPPRESS = 2, IMAGE_RENDERING_COUNT };
+  enum IMAGE_RENDERING { IMAGES_DISPLAY = 0, IMAGES_PLACEHOLDER = 1, IMAGES_SUPPRESS = 2, IMAGE_RENDERING_COUNT };  // @prov(section="reader")
 
   // How Select opens the reader menu: the classic full-screen list, or a toolbar
   // overlay (top/bottom bars with Contents / Text / More bottom-sheet panels)
   // painted over the page.
-  enum READER_MENU_STYLE { READER_MENU_LIST = 0, READER_MENU_TOOLBAR = 1, READER_MENU_STYLE_COUNT };
+  enum READER_MENU_STYLE { READER_MENU_LIST = 0, READER_MENU_TOOLBAR = 1, READER_MENU_STYLE_COUNT };  // @prov(section="reader")
 
   enum TILT_PAGE_TURN { TILT_OFF = 0, TILT_NORMAL = 1, TILT_NVERTED = 2, TILT_PAGE_TURN_COUNT };
-  enum VIBRATION { VIBRATION_TOUCH = 0, VIBRATION_TOUCH_PAGE = 1, VIBRATION_OFF = 2 };
+  enum VIBRATION { VIBRATION_TOUCH = 0, VIBRATION_TOUCH_PAGE = 1, VIBRATION_OFF = 2 };  // @prov(section="ui")
   uint8_t vibration = VIBRATION_OFF;
-  enum HAPTIC_INTENSITY { HAPTIC_LOW = 0, HAPTIC_MEDIUM = 1, HAPTIC_HIGH = 2 };
+  enum HAPTIC_INTENSITY { HAPTIC_LOW = 0, HAPTIC_MEDIUM = 1, HAPTIC_HIGH = 2 };  // @prov(section="ui")
   uint8_t hapticIntensity = HAPTIC_HIGH;
 
   enum TOUCH_READER_CONTROLS { TOUCH_READER_OFF = 0, TOUCH_READER_ON = 1, TOUCH_READER_CONTROLS_COUNT };
@@ -216,7 +219,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   // "tapForReaderMenu" key: 0/1 keep their old Off/Tap meaning.
   enum SHOW_READER_MENU { READER_MENU_OFF = 0, READER_MENU_TAP = 1, READER_MENU_SWIPE_UP = 2, SHOW_READER_MENU_COUNT };
 
-  enum QUICK_RESUME_SLEEP_SCREEN {
+  enum QUICK_RESUME_SLEEP_SCREEN {  // @prov(section="reader")
     QUICK_RESUME_NEVER = 0,
     QUICK_RESUME_AFTER_TIMEOUT = 1,
     QUICK_RESUME_SLEEP_SCREEN_COUNT
@@ -226,7 +229,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   uint8_t sleepScreen = DARK;
   // Night mode: inverted output polarity, applied to every activity per
   // render by ActivityManager. The sleep screen opts out itself.
-  uint8_t screenInverted = 0;
+  uint8_t screenInverted = 0;  // @prov(section="display", json_key="nightMode")
   // Sleep screen cover mode settings
   uint8_t sleepScreenCoverMode = FIT;
   // Sleep screen cover filter
@@ -258,7 +261,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   // Resetting to 0 (e.g. via the web UI) forces a re-sync on next WiFi connect.
   uint8_t clockHasBeenSynced = 0;
   // Text rendering settings
-  uint8_t extraParagraphSpacing = 1;
+  uint8_t extraParagraphSpacing = 1;  // @prov(section="text", json_key="paragraphSpacing")
   uint8_t paragraphIndentSpaces = 2;
   static constexpr uint8_t WORD_SPACING_MIN = 50;
   static constexpr uint8_t WORD_SPACING_MAX = 200;
@@ -294,7 +297,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   // Point size of the reader font. Only sizes the active family actually ships
   // are selectable; SdCardFontSystem::ensureLoaded() snaps this to the nearest
   // available size (and persists the snap) whenever the family changes.
-  uint8_t fontPointSize = DEFAULT_FONT_POINT_SIZE;
+  uint8_t fontPointSize = DEFAULT_FONT_POINT_SIZE;  // @prov(section="text", json_key="fontSize")
   uint8_t lineSpacing = NORMAL;
   uint8_t paragraphAlignment = JUSTIFIED;
   // Auto-sleep timeout setting (default 10 minutes). Legacy sleepTimeout enum values are migration-only.
@@ -326,7 +329,7 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   // UI Theme
   uint8_t uiTheme = LYRA;
   // Sunlight fading compensation
-  uint8_t fadingFix = 0;
+  uint8_t fadingFix = 0;  // @prov(section="display", json_key="fadingCompensation")
   // Power button return from footnotes (1 = enabled, 0 = disabled)
   uint8_t pwrBtnFootnoteBack = 1;
   // Use book's embedded CSS styles for EPUB rendering (1 = enabled, 0 = disabled)

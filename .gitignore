@@ -10,6 +10,7 @@ lib/I18n/I18nKeys.h
 lib/I18n/I18nStrings.h
 lib/I18n/I18nStrings.cpp
 *.generated.h
+*.generated.cpp
 .vs
 build
 **/__pycache__/

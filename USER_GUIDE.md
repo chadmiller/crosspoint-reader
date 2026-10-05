@@ -748,3 +748,11 @@ Press **Ctrl-C** or close the graph window to exit.
 If the device is stuck in a bootloop, press and release the Reset button. Then, press and hold on to the configured Back button and the Power Button to boot to the Home Screen.
 
 There can be issues with broken cache or config. In this case, delete the `.crosspoint` directory on your SD card (or consider deleting only `settings.json`, `state.json`, or `epub_*` cache directories in the `.crosspoint/` folder).
+
+---
+
+## 8. Advanced: Provisioning Configuration
+
+For advanced users and fleet deployments, you can preconfigure WiFi networks, OPDS servers, text rendering, and all other settings by placing a `/provision.json` file on the SD card root. Settings are applied at boot and the file self-deletes when complete.
+
+See [docs/provisioning.md](https://github.com/crosspoint-reader/crosspoint-reader/blob/develop/docs/provisioning.md) for the full configuration schema and examples.
