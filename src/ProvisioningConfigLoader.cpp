@@ -7,89 +7,74 @@
 #include "CrossPointSettings.h"
 #include "OpdsServerStore.h"
 #include "ProvisioningSchema.generated.h"
+#include "SettingsList.h"
 #include "WifiCredentialStore.h"
 
 namespace {
 constexpr const char* LOG_MODULE = "PROV";
 
-// Apply a single setting from JSON to settings structure
-bool applySetting(uint8_t* settingsBase, const JsonVariant& jsonValue, const provisioning::SettingMetadata& setting) {
+// Apply a single setting from JSON using the SettingsList infrastructure for type-safe validation
+bool applySetting(const JsonVariant& jsonValue, const provisioning::SettingMetadata& setting) {
   if (jsonValue.isNull()) {
     return false;
   }
 
-  uint8_t* memberPtr = settingsBase + setting.memberOffset;
+  // Find the corresponding SettingInfo from SettingsList to use its valueSetter
+  // This provides type safety, validation, and observability instead of raw offset writes
+  const auto settingsList = getSettingsList();
 
-  switch (setting.type) {
-    case provisioning::TYPE_BOOL: {
-      // JSON bool/number → uint8_t (0 or 1)
-      *memberPtr = jsonValue.as<bool>() ? 1 : 0;
-      return true;
-    }
+  auto it = std::find_if(settingsList.begin(), settingsList.end(),
+                         [&setting](const SettingInfo& info) { return info.key && strcmp(info.key, setting.jsonKey) == 0; });
 
-    case provisioning::TYPE_UINT8: {
-      uint8_t val = jsonValue.as<uint8_t>();
-      *memberPtr = val;
-      return true;
-    }
-
-    case provisioning::TYPE_INT8: {
-      int8_t val = jsonValue.as<int8_t>();
-      *reinterpret_cast<int8_t*>(memberPtr) = val;
-      return true;
-    }
-
-    case provisioning::TYPE_ENUM: {
-      // String → enum value via parser function
-      if (!setting.enumParser) {
-        LOG_ERR(LOG_MODULE, "No enum parser for %s", setting.memberName);
-        return false;
-      }
-
-      const char* strValue = jsonValue.as<const char*>();
-      if (!strValue) {
-        LOG_ERR(LOG_MODULE, "%s: expected string, got %s", setting.memberName,
-                jsonValue.is<int>() ? "number" : "other");
-        return false;
-      }
-
-      int parsed = setting.enumParser(strValue);
-      if (parsed < 0) {
-        LOG_ERR(LOG_MODULE, "%s: unknown value '%s'", setting.memberName, strValue);
-        return false;
-      }
-
-      *memberPtr = static_cast<uint8_t>(parsed);
-      return true;
-    }
-
-    case provisioning::TYPE_STRING: {
-      // String → char[] (with bounds checking)
-      const char* strValue = jsonValue.as<const char*>();
-      if (!strValue) {
-        return false;
-      }
-
-      // Find the actual size of the char array in the struct
-      // For now, assume standard buffer sizes; this could be enhanced with metadata
-      size_t bufferSize = 64;  // Default assumption
-      if (strcmp(setting.memberName, "sdFontFamilyName") == 0) {
-        bufferSize = 32;
-      } else if (strcmp(setting.memberName, "dictionaryName") == 0) {
-        bufferSize = 32;
-      } else if (strcmp(setting.memberName, "opdsDownloadFolder") == 0) {
-        bufferSize = 64;
-      }
-
-      strncpy(reinterpret_cast<char*>(memberPtr), strValue, bufferSize - 1);
-      reinterpret_cast<char*>(memberPtr)[bufferSize - 1] = '\0';
-      return true;
-    }
-
-    default:
-      LOG_ERR(LOG_MODULE, "%s: unknown type %d", setting.memberName, setting.type);
-      return false;
+  if (it == settingsList.end()) {
+    LOG_ERR(LOG_MODULE, "Setting not found in SettingsList: %s", setting.jsonKey);
+    return false;
   }
+
+  const SettingInfo& info = *it;
+
+  // Apply based on setting type
+  if (setting.type == provisioning::TYPE_ENUM) {
+    // String → enum value via parser function
+    if (!setting.enumParser) {
+      LOG_ERR(LOG_MODULE, "No enum parser for %s", setting.memberName);
+      return false;
+    }
+
+    const char* strValue = jsonValue.as<const char*>();
+    if (!strValue) {
+      LOG_ERR(LOG_MODULE, "%s: expected string, got %s", setting.memberName,
+              jsonValue.is<int>() ? "number" : "other");
+      return false;
+    }
+
+    int parsed = setting.enumParser(strValue);
+    if (parsed < 0) {
+      LOG_ERR(LOG_MODULE, "%s: unknown value '%s'", setting.memberName, strValue);
+      return false;
+    }
+
+    // Use the SettingInfo's valueSetter for type-safe application and validation
+    if (info.valueSetter) {
+      info.valueSetter(static_cast<uint8_t>(parsed));
+      LOG_INF(LOG_MODULE, "%s → %d", setting.jsonKey, parsed);
+      return true;
+    } else {
+      LOG_ERR(LOG_MODULE, "No valueSetter for %s", setting.jsonKey);
+      return false;
+    }
+  }
+
+  // For non-enum types, use the valueSetter with the JSON value
+  if (info.valueSetter) {
+    uint8_t val = jsonValue.as<uint8_t>();
+    info.valueSetter(val);
+    LOG_INF(LOG_MODULE, "%s → %d", setting.jsonKey, val);
+    return true;
+  }
+
+  LOG_ERR(LOG_MODULE, "No valueSetter for %s", setting.jsonKey);
+  return false;
 }
 
 // Apply all settings from a section (display, text, statusbar, etc.)
@@ -107,15 +92,12 @@ bool applySettingsSection(JsonDocument& doc, const char* sectionName, const prov
     const auto& setting = settings[i];
 
     if (!section[setting.jsonKey].isNull()) {
-      if (applySetting(reinterpret_cast<uint8_t*>(&SETTINGS), section[setting.jsonKey], setting)) {
-        LOG_INF(LOG_MODULE, "%s.%s = %s", sectionName, setting.jsonKey, setting.memberName);
+      if (applySetting(section[setting.jsonKey], setting)) {
         section.remove(setting.jsonKey);
         anyApplied = true;
       } else {
-        LOG_ERR(LOG_MODULE, "%s.%s: failed to apply to %s", sectionName, setting.jsonKey, setting.memberName);
+        LOG_ERR(LOG_MODULE, "%s.%s: failed to apply", sectionName, setting.jsonKey);
       }
-    } else {
-      LOG_INF(LOG_MODULE, "%s.%s: section was empty", sectionName, setting.jsonKey);
     }
   }
 
