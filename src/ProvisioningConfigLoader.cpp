@@ -14,15 +14,15 @@ namespace {
 constexpr const char* LOG_MODULE = "PROV";
 
 // Apply a single setting from JSON using the SettingsList infrastructure for type-safe validation
-bool applySetting(const JsonVariant& jsonValue, const provisioning::SettingMetadata& setting) {
+// settingsList is passed to avoid repeated expensive calls to getSettingsList()
+bool applySetting(const JsonVariant& jsonValue, const provisioning::SettingMetadata& setting,
+                  const std::vector<SettingInfo>& settingsList) {
   if (jsonValue.isNull()) {
     return false;
   }
 
   // Find the corresponding SettingInfo from SettingsList to use its valueSetter
   // This provides type safety, validation, and observability instead of raw offset writes
-  const auto settingsList = getSettingsList();
-
   auto it = std::find_if(settingsList.begin(), settingsList.end(),
                          [&setting](const SettingInfo& info) { return info.key && strcmp(info.key, setting.jsonKey) == 0; });
 
@@ -79,7 +79,7 @@ bool applySetting(const JsonVariant& jsonValue, const provisioning::SettingMetad
 
 // Apply all settings from a section (display, text, statusbar, etc.)
 bool applySettingsSection(JsonDocument& doc, const char* sectionName, const provisioning::SettingMetadata* settings,
-                          size_t settingCount) {
+                          size_t settingCount, const std::vector<SettingInfo>& settingsList) {
   JsonObject section = doc[sectionName];
   if (section.isNull()) {
     return false;
@@ -92,7 +92,7 @@ bool applySettingsSection(JsonDocument& doc, const char* sectionName, const prov
     const auto& setting = settings[i];
 
     if (!section[setting.jsonKey].isNull()) {
-      if (applySetting(section[setting.jsonKey], setting)) {
+      if (applySetting(section[setting.jsonKey], setting, settingsList)) {
         section.remove(setting.jsonKey);
         anyApplied = true;
       } else {
@@ -131,17 +131,20 @@ bool ProvisioningConfigLoader::processProvisioningConfig(const char* provJson) {
     return false;  // Leave file in place for manual fix
   }
 
+  // Cache SettingsList to avoid expensive repeated lookups
+  const auto settingsList = getSettingsList();
+
   bool anyWifiApplied = applyWifiSettings(doc);
   bool anyOpdsApplied = applyOpdsSettings(doc);
 
   // Apply schema-driven core settings (as enums are annotated with @schema: markers)
   bool anyCoreApplied = false;
   anyCoreApplied |=
-      applySettingsSection(doc, "display", provisioning::displaySettings, provisioning::displaySettingsCount);
-  anyCoreApplied |= applySettingsSection(doc, "text", provisioning::textSettings, provisioning::textSettingsCount);
+      applySettingsSection(doc, "display", provisioning::displaySettings, provisioning::displaySettingsCount, settingsList);
+  anyCoreApplied |= applySettingsSection(doc, "text", provisioning::textSettings, provisioning::textSettingsCount, settingsList);
   anyCoreApplied |=
-      applySettingsSection(doc, "statusbar", provisioning::statusbarSettings, provisioning::statusbarSettingsCount);
-  anyCoreApplied |= applySettingsSection(doc, "ui", provisioning::uiSettings, provisioning::uiSettingsCount);
+      applySettingsSection(doc, "statusbar", provisioning::statusbarSettings, provisioning::statusbarSettingsCount, settingsList);
+  anyCoreApplied |= applySettingsSection(doc, "ui", provisioning::uiSettings, provisioning::uiSettingsCount, settingsList);
 
   // Save modified settings
   if (anyWifiApplied) {
@@ -222,10 +225,12 @@ bool ProvisioningConfigLoader::applyWifiSettings(JsonDocument& doc) {
       anyApplied = true;
     } else {
       LOG_ERR(LOG_MODULE, "OPDS: Invalid filenameFormat '%s'", filenameFormat);
-      return anyApplied;  // Leave in file
+      // Leave in file for manual fix; don't remove
     }
-    LOG_INF(LOG_MODULE, "OPDS: Filename format = %d", SETTINGS.opdsFilenameFormat);
-    wifi.remove("filenameFormat");
+    if (SETTINGS.opdsFilenameFormat <= 2) {
+      LOG_INF(LOG_MODULE, "OPDS: Filename format = %d", SETTINGS.opdsFilenameFormat);
+      wifi.remove("filenameFormat");
+    }
   }
 
   return anyApplied;
@@ -274,6 +279,8 @@ bool ProvisioningConfigLoader::applyOpdsSettings(JsonDocument& doc) {
   // Clean up empty servers array
   if (servers.size() == 0) {
     opds.remove("servers");
+  } else {
+    LOG_INF(LOG_MODULE, "OPDS: Remaining servers: %d", servers.size());
   }
 
   return anyApplied;
@@ -306,9 +313,12 @@ bool ProvisioningConfigLoader::persistModifiedConfig(const JsonDocument& doc) {
 }
 
 bool ProvisioningConfigLoader::hasRemainingItems(const JsonDocument& doc) {
+  // Check if there are any non-empty top-level sections remaining
   for (JsonObjectConst::iterator it = doc.as<JsonObjectConst>().begin(); it != doc.as<JsonObjectConst>().end(); ++it) {
     const JsonVariantConst val = it->value();
-    if (val.size() > 0) {
+    // For containers (arrays/objects): check if they have items
+    // For scalars (string/number/bool): they're not expected at top level, but treat as remaining
+    if (!val.isNull() && (val.size() > 0 || (!val.is<JsonObjectConst>() && !val.is<JsonArrayConst>()))) {
       return true;
     }
   }
