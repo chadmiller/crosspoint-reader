@@ -49,7 +49,12 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
     PROGRESS_BAR_THICK = 2,
     STATUS_BAR_PROGRESS_BAR_THICKNESS_COUNT
   };
-  enum STATUS_BAR_TITLE { BOOK_TITLE = 0, CHAPTER_TITLE = 1, HIDE_TITLE = 2, STATUS_BAR_TITLE_COUNT };  // @prov(section="statusbar")
+  enum STATUS_BAR_TITLE {  // @prov(section="statusbar")
+    BOOK_TITLE = 0,
+    CHAPTER_TITLE = 1,
+    HIDE_TITLE = 2,
+    STATUS_BAR_TITLE_COUNT
+  };
   enum XTC_STATUS_BAR_MODE {  // @prov(section="statusbar")
     XTC_STATUS_BAR_HIDE = 0,
     XTC_STATUS_BAR_BOTTOM = 1,
@@ -66,9 +71,14 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
 
   // Auto follows the timezone's baked DST rule; On/Off override it — the
   // escape hatch for a zone whose law changed before the firmware caught up.
-  enum CLOCK_DST_MODE { CLOCK_DST_AUTO = 0, CLOCK_DST_ON = 1, CLOCK_DST_OFF = 2, CLOCK_DST_MODE_COUNT };  // @prov(section="statusbar")
+  enum CLOCK_DST_MODE {  // @prov(section="statusbar")
+    CLOCK_DST_AUTO = 0,
+    CLOCK_DST_ON = 1,
+    CLOCK_DST_OFF = 2,
+    CLOCK_DST_MODE_COUNT
+  };
 
-  enum ORIENTATION {  // @prov(section="display")
+  enum ORIENTATION {    // @prov(section="display")
     PORTRAIT = 0,       // 480x800 logical coordinates (current default)
     LANDSCAPE_CW = 1,   // 800x480 logical coordinates, rotated 180° (swap top/bottom)
     INVERTED = 2,       // 480x800 logical coordinates, inverted
@@ -117,7 +127,13 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   // slot; fromJson() folds that range up (see LEGACY_FONT_SIZE_MAX).
   static constexpr uint8_t LEGACY_FONT_SIZE_MAX = 3;
   static constexpr uint8_t DEFAULT_FONT_POINT_SIZE = 14;
-  enum LINE_COMPRESSION { TIGHT = 0, NORMAL = 1, WIDE = 2, EXTRA_WIDE = 3, LINE_COMPRESSION_COUNT };  // @prov(section="text")
+  enum LINE_COMPRESSION {  // @prov(section="text")
+    TIGHT = 0,
+    NORMAL = 1,
+    WIDE = 2,
+    EXTRA_WIDE = 3,
+    LINE_COMPRESSION_COUNT
+  };
   enum PARAGRAPH_ALIGNMENT {  // @prov(section="text")
     JUSTIFIED = 0,
     LEFT_ALIGN = 1,
@@ -174,7 +190,12 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   };
 
   // Hide battery percentage
-  enum HIDE_BATTERY_PERCENTAGE { HIDE_NEVER = 0, HIDE_READER = 1, HIDE_ALWAYS = 2, HIDE_BATTERY_PERCENTAGE_COUNT };  // @prov(section="statusbar")
+  enum HIDE_BATTERY_PERCENTAGE {  // @prov(section="statusbar")
+    HIDE_NEVER = 0,
+    HIDE_READER = 1,
+    HIDE_ALWAYS = 2,
+    HIDE_BATTERY_PERCENTAGE_COUNT
+  };
 
   // Page turn button long press behavior
   enum LONG_PRESS_BUTTON_BEHAVIOR {
@@ -188,12 +209,21 @@ class CrossPointSettings : public PersistableStore<CrossPointSettings> {
   enum UI_THEME { CLASSIC = 0, LYRA = 1, LYRA_3_COVERS = 2, ROUNDEDRAFF = 3, COVER_GRID = 4 };  // @prov(section="ui")
 
   // Image rendering in EPUB reader
-  enum IMAGE_RENDERING { IMAGES_DISPLAY = 0, IMAGES_PLACEHOLDER = 1, IMAGES_SUPPRESS = 2, IMAGE_RENDERING_COUNT };  // @prov(section="reader")
+  enum IMAGE_RENDERING {  // @prov(section="reader")
+    IMAGES_DISPLAY = 0,
+    IMAGES_PLACEHOLDER = 1,
+    IMAGES_SUPPRESS = 2,
+    IMAGE_RENDERING_COUNT
+  };
 
   // How Select opens the reader menu: the classic full-screen list, or a toolbar
   // overlay (top/bottom bars with Contents / Text / More bottom-sheet panels)
   // painted over the page.
-  enum READER_MENU_STYLE { READER_MENU_LIST = 0, READER_MENU_TOOLBAR = 1, READER_MENU_STYLE_COUNT };  // @prov(section="reader")
+  enum READER_MENU_STYLE {  // @prov(section="reader")
+    READER_MENU_LIST = 0,
+    READER_MENU_TOOLBAR = 1,
+    READER_MENU_STYLE_COUNT
+  };
 
   enum TILT_PAGE_TURN { TILT_OFF = 0, TILT_NORMAL = 1, TILT_NVERTED = 2, TILT_PAGE_TURN_COUNT };
   enum VIBRATION { VIBRATION_TOUCH = 0, VIBRATION_TOUCH_PAGE = 1, VIBRATION_OFF = 2 };  // @prov(section="ui")
